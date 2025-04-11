@@ -1,0 +1,26 @@
+//@version=5
+strategy("VOLT Strategy - Generated", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
+
+fast = input.int(13, title="Fast EMA")
+slow = input.int(55, title="Slow EMA")
+atr_length = input.int(21, title="ATR Length")
+sl_mult = input.float(2.0, title="Stop Loss Multiplier (ATR)")
+tp_mult = input.float(3.5, title="Take Profit Multiplier (ATR)")
+
+ema_fast = ta.ema(close, fast)
+ema_slow = ta.ema(close, slow)
+atr = ta.atr(atr_length)
+
+enterLong = ta.crossover(ema_fast, ema_slow) and close > ema_fast and close > ema_slow
+
+entryPrice = close * (1 + 0.002)
+commissionBuffer = close * 0.0075
+stopLevel = entryPrice - atr * sl_mult - commissionBuffer
+tpLevel = entryPrice + atr * tp_mult - commissionBuffer
+
+if (enterLong)
+    strategy.entry("Long", strategy.long)
+    strategy.exit("Exit", "Long", stop=stopLevel, limit=tpLevel)
+
+plot(ema_fast, color=color.blue, title="Fast EMA")
+plot(ema_slow, color=color.orange, title="Slow EMA")

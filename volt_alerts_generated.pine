@@ -1,0 +1,49 @@
+//@version=5
+indicator("VOLT Alerts - Generated", overlay=true)
+
+fast = input.int(13, title="Fast EMA")
+slow = input.int(55, title="Slow EMA")
+atr_length = input.int(21, title="ATR Length")
+sl_mult = input.float(2.0, title="Stop Loss Multiplier (ATR)")
+tp_mult = input.float(3.5, title="Take Profit Multiplier (ATR)")
+
+ema_fast = ta.ema(close, fast)
+ema_slow = ta.ema(close, slow)
+atr = ta.atr(atr_length)
+
+var float entryPrice = na
+var float stopLoss = na
+var float takeProfit = na
+var bool inTrade = false
+
+enterLong = ta.crossover(ema_fast, ema_slow) and close > ema_fast and close > ema_slow
+slHit = inTrade and low <= stopLoss
+tpHit = inTrade and high >= takeProfit
+
+buyTriggered = false
+slTriggered = false
+tpTriggered = false
+
+if (enterLong)
+    entryPrice := close
+    stopLoss := entryPrice - atr * sl_mult
+    takeProfit := entryPrice + atr * tp_mult
+    inTrade := true
+    buyTriggered := true
+
+if (slHit)
+    inTrade := false
+    slTriggered := true
+
+if (tpHit)
+    inTrade := false
+    tpTriggered := true
+
+// Unified alert condition for all cases
+anyAlert = buyTriggered or slTriggered or tpTriggered
+alertcondition(anyAlert, title="VOLT Signal", message="VOLT: {ticker} {interval} {close}")
+
+// Chart annotations
+plotshape(buyTriggered, title="BUY", location=location.belowbar, color=color.green, style=shape.labelup, text="BUY")
+plotshape(slTriggered, title="STOP LOSS", location=location.abovebar, color=color.red, style=shape.labeldown, text="SL")
+plotshape(tpTriggered, title="TAKE PROFIT", location=location.abovebar, color=color.blue, style=shape.labeldown, text="TP")
