@@ -41,10 +41,6 @@ The full system supports:
 * ✅ Python CLI backtest  
 * ✅ Realism via slippage/commission
 
-To replicate or evolve:
-
-python run.py \--mode sweep  
-python sweep/postprocess.py  
 ---
 
 ## **🖥️ Files Included**
